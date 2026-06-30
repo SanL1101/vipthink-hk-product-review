@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>海外港澳产品复习 2.0</title>
+<style>
+/* ============================================================
+   CSS 变量
+   ============================================================ */
+:root {
+  --primary: #0ea5e9;
+  --primary-light: #38bdf8;
+  --primary-dark: #0369a1;
+  --accent: #f59e0b;
+  --accent-light: #fbbf24;
+  --success: #10b981;
+  --danger: #ef4444;
+  --bg: #f0f7ff;
+  --card: #ffffff;
+  --text: #1e293b;
+  --text-secondary: #64748b;
+  --border: #bae6fd;
+  --sidebar-bg: #0f172a;
+  --sidebar-text: #cbd5e1;
+  --sidebar-active: #0ea5e9;
+  --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.7;
+  display: flex; min-height: 100vh;
+}
+
+/* ============================================================
+   侧边栏
+   ============================================================ */
+.sidebar {
+  width: 280px; min-width: 280px; background: var(--sidebar-bg);
+  color: var(--sidebar-text); display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+  transition: transform 0.3s;
+}
+.sidebar-close-btn { display: none; position: absolute; top: 8px; right: 12px;
+  background: none; border: none; color: #94a3b8; font-size: 20px;
+  cursor: pointer; z-index: 10; padding: 8px; line-height: 1; }
+
+.sidebar-header { padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.sidebar-header h3 { font-size: 14px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+.sidebar-header .course-title { font-size: 16px; font-weight: 700; color: #fff; line-height: 1.4; }
+
+.sidebar-progress { padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.progress-label { display: flex; justify-content: space-between; font-size: 12px; color: #94a3b8; margin-bottom: 8px; }
+.progress-bar { height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--sidebar-active); border-radius: 3px; transition: width 0.5s ease; width: 0%; }
+
+.sidebar-nav { flex: 1; overflow-y: auto; padding: 12px 0; }
+.nav-section { padding: 8px 20px; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: all 0.2s; border-left: 3px solid transparent; }
+.nav-section:hover { background: rgba(255,255,255,0.05); }
+.nav-section.active { background: rgba(14,165,233,0.15); border-left-color: var(--sidebar-active); color: #fff; }
+.nav-section.completed { color: #94a3b8; }
+.nav-section.completed .nav-icon { background: var(--success); color: #fff; }
+.nav-section.locked { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+.nav-section.locked .nav-icon { background: rgba(255,255,255,0.08); color: #64748b; }
+.nav-icon { width: 32px; height: 32px; min-width: 32px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--sidebar-text); transition: all 0.3s; }
+.nav-section.active .nav-icon { background: var(--sidebar-active); color: #fff; }
+.nav-info .nav-label { font-size: 13px; font-weight: 600; }
+.nav-info .nav-sub { font-size: 11px; color: #64748b; margin-top: 2px; }
+.nav-section.active .nav-info .nav-sub { color: #94a3b8; }
+.sidebar-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 12px; color: #64748b; }
+
+.study-timer { padding: 10px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.timer-icon { font-size: 16px; }
+.timer-display { color: #fff; font-weight: 700; font-variant-numeric: tabular-nums; }
+.timer-label { color: #94a3b8; font-size: 11px; }
+
+/* ============================================================
+   主内容区
+   ============================================================ */
+.main { margin-left: 280px; flex: 1; padding: 40px; max-width: 900px; }
+.section { display: none; animation: fadeSlide 0.4s ease; }
+.section.active { display: block; }
+@keyframes fadeSlide { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+.section-header { margin-bottom: 32px; }
+.section-badge { display: inline-block; padding: 4px 14px; background: #e0f2fe; color: var(--primary-dark); border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+.section-header h1 { font-size: 28px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+.section-header .duration { font-size: 14px; color: var(--text-secondary); }
+
+/* ============================================================
+   内容组件
+   ============================================================ */
+.card { background: var(--card); border-radius: var(--radius); padding: 28px; margin-bottom: 20px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+.card-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; color: var(--text); }
+
+.highlight-box { background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border-left: 4px solid var(--primary); padding: 20px 24px; border-radius: var(--radius-sm); margin: 20px 0; }
+.highlight-box.warning { background: linear-gradient(135deg, #fef3c7, #fde68a); border-left-color: var(--accent); }
+.highlight-box.danger { background: linear-gradient(135deg, #fef2f2, #fee2e2); border-left-color: var(--danger); }
+.highlight-box.success { background: linear-gradient(135deg, #ecfdf5, #d1fae5); border-left-color: var(--success); }
+
+.script-block { background: #f1f5f9; padding: 20px 24px; border-radius: var(--radius-sm); font-style: italic; color: #475569; position: relative; margin: 16px 0; line-height: 1.8; }
+.script-block::before { content: '🎙️ 旁白稿'; position: absolute; top: -10px; left: 16px; background: #475569; color: #fff; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-style: normal; }
+
+.flow-steps { display: flex; gap: 16px; margin: 20px 0; flex-wrap: wrap; }
+.flow-step { flex: 1; min-width: 140px; background: var(--card); border: 2px solid var(--border); border-radius: var(--radius-sm); padding: 20px; text-align: center; box-shadow: var(--shadow); }
+.flow-step .step-num { width: 36px; height: 36px; border-radius: 50%; background: var(--primary); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; margin-bottom: 12px; }
+.flow-step h4 { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+.flow-step p { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+.flow-arrow { display: flex; align-items: center; font-size: 24px; color: var(--primary); font-weight: 700; }
+
+.strategy-grid { display: flex; gap: 16px; margin: 20px 0; flex-wrap: wrap; }
+.strategy-card { flex: 1; min-width: 200px; background: var(--card); border: 2px solid var(--border); border-radius: var(--radius-sm); padding: 24px; text-align: center; box-shadow: var(--shadow); }
+.strategy-card .icon { font-size: 36px; margin-bottom: 12px; }
+.strategy-card h4 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.strategy-card p { font-size: 13px; color: var(--text-secondary); }
+
+.lifeline-cards { display: flex; gap: 16px; margin: 20px 0; flex-wrap: wrap; }
+.lifeline-card { flex: 1; min-width: 180px; background: var(--card); border: 2px solid var(--danger); border-radius: var(--radius-sm); padding: 24px; text-align: center; box-shadow: var(--shadow); }
+.lifeline-card .num { font-size: 28px; font-weight: 800; color: var(--danger); margin-bottom: 8px; }
+
+.flash-cards { display: flex; gap: 16px; flex-wrap: wrap; }
+.flash-card { flex: 1; min-width: 220px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 20px; box-shadow: var(--shadow); }
+
+.callout-grid { display: flex; gap: 16px; flex-wrap: wrap; }
+.callout-item { flex: 1; min-width: 180px; background: var(--card); border-radius: var(--radius-sm); padding: 20px; text-align: center; box-shadow: var(--shadow); border-top: 4px solid var(--primary); }
+
+/* qa-list 问答列表 */
+.qa-list { display: flex; flex-direction: column; gap: 16px; margin: 20px 0; }
+.qa-item { background: var(--card); border-radius: var(--radius-sm); padding: 20px 24px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+.qa-q { font-weight: 700; color: var(--primary-dark); margin-bottom: 10px; font-size: 15px; }
+.qa-q::before { content: '❓ '; }
+.qa-a { color: var(--text); font-size: 14px; line-height: 1.8; background: #f0f9ff; border-radius: var(--radius-sm); padding: 12px 16px; }
+.qa-a::before { content: '💡 '; font-weight: 700; color: var(--success); }
+
+/* 升学路径表 */
+.school-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+.school-table th { background: var(--primary); color: #fff; padding: 10px 14px; text-align: left; font-weight: 700; }
+.school-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.school-table tr:nth-child(even) td { background: #f0f9ff; }
+.school-table tr:hover td { background: #e0f2fe; }
+
+/* ============================================================
+   视频
+   ============================================================ */
+.video-wrapper { margin: 24px 0; }
+.video-label { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 12px; }
+video { width: 100%; border-radius: var(--radius-sm); background: #000; }
+
+/* ============================================================
+   互动组件：选择题
+   ============================================================ */
+.quiz-card { background: var(--card); border-radius: var(--radius); padding: 28px; margin: 24px 0; box-shadow: var(--shadow-lg); border: 2px solid var(--border); }
+.quiz-card.answered-correct { border-color: var(--success); }
+.quiz-card.answered-wrong { border-color: var(--danger); }
+.quiz-question { font-size: 16px; font-weight: 600; margin-bottom: 20px; line-height: 1.7; }
+.quiz-options { display: flex; flex-direction: column; gap: 10px; }
+.quiz-option { display: flex; align-items: center; gap: 12px; padding: 16px 16px; border: 2px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s; min-height: 48px; }
+.quiz-option:hover { border-color: var(--primary-light); background: #f0f9ff; }
+.quiz-option.selected { border-color: var(--primary); background: #e0f2fe; }
+.quiz-option.correct { border-color: var(--success) !important; background: #ecfdf5 !important; }
+.quiz-option.wrong { border-color: var(--danger) !important; background: #fef2f2 !important; }
+.quiz-option-label { width: 30px; height: 30px; min-width: 30px; border-radius: 50%; background: var(--border); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+.quiz-feedback { display: none; margin-top: 16px; padding: 16px; border-radius: var(--radius-sm); font-size: 14px; line-height: 1.7; }
+.quiz-feedback.show { display: block; }
+.quiz-feedback.correct { background: #ecfdf5; color: #065f46; }
+.quiz-feedback.wrong { background: #fef2f2; color: #991b1b; }
+
+/* ============================================================
+   互动组件：AI 模拟对话
+   ============================================================ */
+.dialogue-container { background: var(--card); border-radius: var(--radius); padding: 28px; margin: 24px 0; box-shadow: var(--shadow-lg); border: 2px solid var(--border); }
+.dialogue-scenario { background: #f8fafc; padding: 14px 16px; border-radius: var(--radius-sm); font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; }
+.customer-bubble { background: #f1f5f9; padding: 16px 20px; border-radius: 16px 16px 16px 4px; font-size: 14px; line-height: 1.7; margin-bottom: 16px; border: 1px solid #e2e8f0; }
+.reply-input { width: 100%; min-height: 120px; padding: 16px; border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; font-family: inherit; line-height: 1.7; resize: vertical; }
+.reply-input:focus { border-color: var(--primary-light); outline: none; }
+.dialogue-actions { display: flex; gap: 12px; margin-top: 16px; }
+.ai-feedback-panel { display: none; margin-top: 20px; padding: 20px; background: #f8fafc; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+.ai-feedback-panel.show { display: block; }
+
+/* ============================================================
+   互动组件：终极考核
+   ============================================================ */
+.final-task-container { margin: 24px 0; }
+.final-task-input { width: 100%; min-height: 160px; padding: 16px; border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; font-family: inherit; line-height: 1.8; resize: vertical; }
+.final-task-input:focus { border-color: var(--primary-light); outline: none; }
+.char-counter { text-align: right; font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+
+/* ============================================================
+   评分展示
+   ============================================================ */
+.score-display { text-align: center; margin-bottom: 16px; }
+.score-circle { width: 64px; height: 64px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 800; }
+.score-circle.high { background: #ecfdf5; color: #065f46; border: 3px solid var(--success); }
+.score-circle.medium { background: #fffbeb; color: #92400e; border: 3px solid var(--accent); }
+.score-circle.low { background: #fef2f2; color: #991b1b; border: 3px solid var(--danger); }
+
+.keywords-result { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.keyword-tag { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.keyword-tag.found { background: #ecfdf5; color: #065f46; }
+.keyword-tag.missing { background: #fef2f2; color: #991b1b; }
+
+.eval-dimensions { display: flex; gap: 16px; flex-wrap: wrap; }
+.eval-dim { flex: 1; min-width: 160px; background: var(--card); border: 2px solid var(--border); border-radius: var(--radius-sm); padding: 20px; text-align: center; }
+.eval-dim h4 { font-size: 14px; margin-bottom: 8px; }
+.eval-dim .stars { font-size: 16px; margin: 8px 0; }
+
+/* ============================================================
+   证书弹窗
+   ============================================================ */
+.cert-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; justify-content: center; align-items: center; }
+.cert-overlay.show { display: flex; }
+.certificate-paper { background: #fff; border-radius: 16px; padding: 40px 32px; max-width: 560px; width: 90%; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.3); }
+.cert-title { font-size: 28px; font-weight: 800; color: #0369a1; margin-bottom: 8px; }
+.cert-sub { font-size: 12px; color: #64748b; letter-spacing: 0.1em; margin-bottom: 24px; }
+.cert-body { font-size: 15px; color: #1e293b; line-height: 2.2; }
+.cert-name { display: inline-block; border-bottom: 2px solid #0ea5e9; min-width: 100px; padding: 2px 8px; margin: 0 4px; outline: none; }
+.cert-course { font-weight: 700; color: #0369a1; margin: 8px 0; }
+.cert-score { margin: 20px 0 8px; font-size: 16px; font-weight: 600; color: #10b981; }
+.cert-final-score { margin: 0 0 12px; font-size: 14px; font-weight: 600; color: #0ea5e9; }
+.cert-footer { display: flex; justify-content: space-between; font-size: 12px; color: #64748b; margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 16px; }
+.cert-actions { display: flex; gap: 12px; justify-content: center; margin-top: 20px; }
+
+/* ============================================================
+   按钮 & 导航
+   ============================================================ */
+.btn { display: inline-block; padding: 12px 28px; background: var(--primary); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.btn:hover { background: var(--primary-dark); transform: translateY(-1px); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text); }
+.btn-outline:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-1px); }
+.btn-success { background: var(--success); }
+.btn-success:hover { background: #059669; }
+
+.section-nav-buttons { display: flex; justify-content: space-between; margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--border); }
+
+/* ============================================================
+   笔记面板 & Toast
+   ============================================================ */
+.notes-toggle { position: fixed; bottom: 24px; right: 24px; width: 48px; height: 48px; border-radius: 50%; background: var(--primary); color: #fff; border: none; cursor: pointer; font-size: 20px; box-shadow: var(--shadow-lg); z-index: 50; display: flex; align-items: center; justify-content: center; }
+.notes-panel { position: fixed; right: 0; top: 0; bottom: 0; width: 300px; background: var(--card); box-shadow: -4px 0 20px rgba(0,0,0,0.1); z-index: 90; transform: translateX(100%); transition: transform 0.3s; padding: 24px; display: flex; flex-direction: column; }
+.notes-panel.open { transform: translateX(0); }
+.notes-panel h3 { margin-bottom: 12px; }
+.notes-panel textarea { flex: 1; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; font-family: inherit; font-size: 13px; resize: none; }
+
+.toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 24px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; z-index: 300; animation: toastIn 0.3s ease; box-shadow: var(--shadow-lg); }
+.toast.success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+.toast.warning { background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; }
+.toast.info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ============================================================
+   移动端适配 (≤1024px)
+   ============================================================ */
+.mobile-header { display: none; background: var(--sidebar-bg); color: #fff; padding: 10px 16px; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 50; min-height: 48px; }
+.mobile-header .mh-title { flex: 1; font-weight: 700; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mobile-header .mh-btn { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 4px 8px; line-height: 1; min-width: 36px; min-height: 36px; display: flex; align-items: center; justify-content: center; }
+.mobile-progress-bar { display: none; height: 3px; background: rgba(255,255,255,0.15); position: sticky; top: 48px; z-index: 49; }
+.mobile-progress-bar .mpb-fill { height: 100%; background: var(--primary-light); transition: width 0.5s ease; width: 0%; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
+
+@media (max-width: 1024px) {
+  body { flex-direction: column; }
+  .sidebar { transform: translateX(-100%); width: 280px; min-width: 280px; transition: transform 0.3s ease; }
+  .sidebar.open { transform: translateX(0); z-index: 110; }
+  .sidebar-overlay.show { display: block; }
+  .sidebar-close-btn { display: block; }
+  .mobile-header { display: flex; }
+  .mobile-progress-bar { display: block; }
+  .main { margin-left: 0 !important; padding: 16px 14px 80px; max-width: 100%; }
+  .section-header h1 { font-size: 20px; }
+  .section-badge { font-size: 11px; padding: 3px 10px; }
+  .card { padding: 16px; border-radius: 10px; }
+  .card-title { font-size: 16px; }
+  .flow-steps, .strategy-grid, .lifeline-cards, .callout-grid, .flash-cards, .eval-dimensions { flex-direction: column; }
+  .flow-arrow { transform: rotate(90deg); }
+  .quiz-option { padding: 14px 12px; min-height: 44px; font-size: 13px; }
+  .dialogue-actions { flex-direction: column; }
+  .dialogue-actions .btn { width: 100%; }
+  .final-task-input { min-height: 120px; font-size: 13px; padding: 12px; }
+  .section-nav-buttons { flex-direction: column; gap: 10px; position: sticky; bottom: 0; background: var(--bg); padding: 12px 0; border-top: 1px solid var(--border); margin-top: 24px; }
+  .section-nav-buttons .btn { width: 100%; text-align: center; padding: 14px 24px; font-size: 15px; }
+  .section-nav-buttons > div { width: 100%; }
+  .notes-toggle { display: none; }
+  .notes-panel { width: 100%; max-width: 340px; }
+  .toast { left: 50%; right: auto; transform: translateX(-50%); bottom: 80px; white-space: nowrap; font-size: 13px; padding: 10px 20px; }
+  .certificate-paper { width: 95%; max-width: 95%; padding: 28px 20px; max-height: 90vh; overflow-y: auto; }
+  .cert-title { font-size: 22px; }
+  .cert-body { font-size: 13px; line-height: 1.8; }
+  .cert-actions { flex-direction: column; }
+  .cert-actions .btn { width: 100%; }
+  .score-circle { width: 56px; height: 56px; font-size: 22px; }
+  .keyword-tag { font-size: 11px; padding: 3px 8px; }
+  .school-table { font-size: 12px; }
+}
+</style>
+</head>
+<body>
+
+<!-- 侧边栏 -->
+<aside class="sidebar" id="sidebar">
+  <button class="sidebar-close-btn" onclick="toggleSidebar()" aria-label="关闭菜单">✕</button>
+  <div class="sidebar-header">
+    <h3>微课</h3>
+    <div class="course-title">海外港澳产品复习 2.0</div>
+  </div>
+  <div class="sidebar-progress">
+    <div class="progress-label"><span>学习进度</span><span id="progressPercent">0%</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+  <div class="study-timer">
+    <span class="timer-icon">⏱</span>
+    <span class="timer-display" id="timerDisplay">00:00</span>
+    <span class="timer-label">学习时长</span>
+  </div>
+  <div class="sidebar-nav" id="sidebarNav"></div>
+  <div class="sidebar-footer">
+    <button onclick="toggleNotes()" style="background:none;border:1px solid rgba(255,255,255,0.15);color:var(--sidebar-text);padding:6px 16px;border-radius:20px;font-size:12px;cursor:pointer;width:100%;">📝 学习笔记</button>
+  </div>
+</aside>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- 移动端顶部导航 -->
+<div class="mobile-header">
+  <button class="mh-btn" onclick="toggleSidebar()" aria-label="菜单">☰</button>
+  <span class="mh-title" id="mhTitle">海外港澳产品复习 2.0</span>
+  <span style="font-size:12px;opacity:0.7;white-space:nowrap;" id="mhTimer">00:00</span>
+</div>
+<div class="mobile-progress-bar"><div class="mpb-fill" id="mpbFill"></div></div>
+
+<!-- 主内容区 -->
+<main class="main" id="mainContent"></main>
+
+<!-- 证书弹窗 -->
+<div class="cert-overlay" id="certOverlay">
+  <div class="certificate-paper" id="certPaper">
+    <div class="cert-title">🏆 结业证书</div>
+    <div class="cert-sub">CERTIFICATE OF COMPLETION</div>
+    <div class="cert-body">
+      <p>兹证明</p>
+      <p><span class="cert-name" id="certStudentName" contenteditable="true">请填写姓名</span></p>
+      <p>已完成</p>
+      <p class="cert-course">海外港澳产品复习 2.0</p>
+      <p>全部课程内容并通过考核</p>
+      <div class="cert-score" id="certScore">综合评定：通过</div>
+      <div class="cert-final-score" id="certFinalScore">终极考核得分：-- 分</div>
+    </div>
+    <div class="cert-footer">
+      <span id="certDate"></span>
+      <span>海外益智团队</span>
+    </div>
+    <div class="cert-actions">
+      <button class="btn" onclick="printCertificate()">🖨️ 打印证书</button>
+      <button class="btn btn-outline" onclick="closeCertificate()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 笔记面板 -->
+<button class="notes-toggle" onclick="toggleNotes()">📝</button>
+<div class="notes-panel" id="notesPanel">
+  <h3>📝 学习笔记 — <span id="notesChapterLabel" style="font-weight:400;font-size:13px;color:var(--text-secondary);"></span></h3>
+  <textarea id="notesTextarea" placeholder="在这里记录你的学习心得..."></textarea>
+  <button class="btn btn-outline" onclick="toggleNotes()" style="margin-top:12px;width:100%;">关闭</button>
+</div>
+
+<script>
+// ============================================================
+// 课程数据
+// ============================================================
+const courseData = {
+  title: '海外港澳产品复习 2.0',
+  sections: [
+    {
+      id: 's1',
+      title: '开篇：产品定位与核心优势',
+      duration: '8-10分钟',
+      icon: '1',
+      type: 'content_quiz',
+      quizId: 'quiz1',
+      content: `
+        <div class="section-header">
+          <span class="section-badge">第一章</span>
+          <h1>🌟 产品定位与核心优势</h1>
+          <span class="duration">⏱ 预计 8-10 分钟</span>
+        </div>
+
+        <div class="highlight-box success">
+          ✅ <strong>学习目标：</strong>掌握豌豆思维的产品定位、核心价值主张，能够用一句话清晰介绍课程。
+        </div>
+
+        <div class="card">
+          <div class="card-title">🎯 豌豆思维是什么？</div>
+          <p>豌豆思维专为 <strong>3-12岁儿童</strong> 设计，是融合国际数学教育理念与港澳本地学情的 <strong>数学思维启蒙与进阶课程</strong>。</p>
+          <div class="highlight-box" style="margin-top:16px;">
+            💡 <strong>一句话介绍模板：</strong>豌豆思维是专为3-12岁孩子设计的数学思维课程，结合国际教育理念和港澳本地学情，帮助孩子系统培养数学思维能力。
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">🧠 为什么重视3-8岁？——布鲁姆博士研究数据</div>
+          <div class="strategy-grid">
+            <div class="strategy-card">
+              <div class="icon">🔬</div>
+              <h4>科学依据</h4>
+              <p>布鲁姆博士研究发现，5岁时儿童智力已发展到成人的 <strong>50%</strong></p>
+            </div>
+            <div class="strategy-card">
+              <div class="icon">⭐</div>
+              <h4>黄金发展期</h4>
+              <p>3-8岁是认知思维发展的 <strong>黄金期</strong>，需要系统的思维训练打好基础</p>
+            </div>
+            <div class="strategy-card">
+              <div class="icon">🚀</div>
+              <h4>及早介入</h4>
+              <p>在黄金期内进行系统训练，事半功倍，错过则需付出更多努力</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">👨‍🏫 师资体系——打消家长顾虑的核心武器</div>
+          <div class="flow-steps">
+            <div class="flow-step">
+              <div class="step-num">8.3%</div>
+              <h4>通过率</h4>
+              <p>严苛筛选，仅8.3%入选</p>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+              <div class="step-num">100%</div>
+              <h4>专业背景</h4>
+              <p>师范专业或985/211重点高校</p>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+              <div class="step-num">360h</div>
+              <h4>专业培训</h4>
+              <p>3轮面试+5次试讲+360小时培训</p>
+            </div>
+          </div>
+          <div class="highlight-box success">
+            ✅ <strong>话术要点：</strong>我们会用科学分阶体系匹配孩子的学习阶段，由100%师范专业或985/211背景的老师授课，经过严格筛选与培训，确保教学质量，让家长放心交给专家。
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">🤝 个性化伴学服务——解决"没时间"痛点</div>
+          <div class="highlight-box warning">
+            ⚠️ <strong>家长常见痛点：</strong>"工作太忙，根本没时间教孩子做题。"
+          </div>
+          <p style="margin:16px 0;">解决方案：推荐<strong>个性化伴学服务</strong></p>
+          <div class="flow-steps">
+            <div class="flow-step">
+              <div class="step-num">3</div>
+              <h4>位老师</h4>
+              <p>共同负责1个孩子，专注陪伴</p>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+              <div class="step-num">全</div>
+              <h4>程覆盖</h4>
+              <p>课前预习 + 课中学习 + 课后复习</p>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+              <div class="step-num">✓</div>
+              <h4>减轻负担</h4>
+              <p>家长无需亲自辅导，放心交给专家</p>
+            </div>
+          </div>
+        </div>
+      `
+    },
+    {
+      id: 's2',
+      title: '痛点话术：三大家长顾虑',
+      duration: '10-12分钟',
+      icon: '2',
+      type: 'content_quiz',
+      quizId: 'quiz2',
+      content: `
+        <div class="section-header">
+          <span class="section-badge">第二章</span>
+          <h1>💬 痛点话术：三大家长顾虑</h1>
+          <span class="duration">⏱ 预计 10-12 分钟</span>
+        </div>
+
+        <div class="highlight-box">
+          📌 <strong>本章重点：</strong>掌握家长三大痛点（不专业/没时间/怕无效）的对应话术，能流畅应对异议。
+        </div>
+
+        <div class="card">
+          <div class="card-title">😟 痛点一：不专业（不会教孩子）</div>
+          <div class="qa-list">
+            <div class="qa-item">
+              <div class="qa-q">家长说："我数学不好，怕教错孩子。"</div>
+              <div class="qa-a">解决方案：<strong>科学分阶体系 + 专业师资</strong>。最终让家长放心：教育交给专家，路径科学可靠。强调100%师范专业/985/211背景老师，8.3%的严苛筛选通过率。</div>
+            </div>
+          </div>
+          <div class="highlight-box success">
+            ✅ <strong>话术模板：</strong>正因为您数学不好，更需要让专业的人来教！我们的老师100%都是师范专业或985/211背景，每位老师都经过8.3%的严苛筛选，360小时专业培训，教学质量有保障，您完全可以放心。
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">⏰ 痛点二：没时间（精力有限）</div>
+          <div class="qa-list">
+            <div class="qa-item">
+              <div class="qa-q">家长说："工作太忙，根本没时间陪孩子学习。"</div>
+              <div class="qa-a">解决方案：<strong>个性化伴学服务</strong>。3位老师服务1个孩子，覆盖课前、课中、课后全流程，解放家长精力。</div>
+            </div>
+          </div>
+          <div class="highlight-box success">
+            ✅ <strong>话术模板：</strong>豌豆的个性化伴学服务，是专门为像您这样忙碌的家长设计的。3位专属老师负责您孩子的课前预习、课中辅导、课后复习，全程陪伴，您只需要关注孩子的进步报告就好！
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">📊 痛点三：怕无效（没兴趣/没成果）</div>
+          <div class="strategy-grid">
+            <div class="strategy-card">
+              <div class="icon">🎮</div>
+              <h4>兴趣激发</h4>
+              <p>游戏化课堂 + 多元互动教学，让孩子主动参与，爱上学习</p>
+            </div>
+            <div class="strategy-card">
+              <div class="icon">🏆</div>
+              <h4>成果保障</h4>
+              <p>连接校内内容，前置2个月学习，考点100%覆盖，能力与成绩双提升</p>
+            </div>
+          </div>
+          <div class="highlight-box success">
+            ✅ <strong>话术模板：</strong>关于效果，豌豆从两方面保证：对孩子，通过游戏化课堂激发学习兴趣，孩子会主动学；对家长，课程提前2个月连接校内内容，考点全覆盖，成绩自然会提升！
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">📋 香港本地化优势——呈分试专项支持</div>
+          <div class="qa-list">
+            <div class="qa-item">
+              <div class="qa-q">家长问："豌豆能帮孩子应对呈分试和中一入学试吗？"</div>
+              <div class="qa-a">豌豆思维针对呈分试和中一入学试开发了<strong>专项训练模块与模拟题库</strong>，覆盖考点，结合香港本地题型与语言习惯，帮助学生熟悉考试模式。</div>
+            </div>
+          </div>
+          <div class="flash-cards">
+            <div class="flash-card">
+              <strong>📚 贴合本地教材</strong>
+              <p style="margin-top:8px;font-size:13px;color:#64748b;">课程大纲贴合香港主流数学教材，语言表述和出题方向与本地一致</p>
+            </div>
+            <div class="flash-card">
+              <strong>✅ 全覆盖考点</strong>
+              <p style="margin-top:8px;font-size:13px;color:#64748b;">校内单元覆盖70%+，考点100%覆盖，提前2个月前置学习</p>
+            </div>
+            <div class="flash-card">
+              <strong>🗣️ 粤语班型</strong>
+              <p style="margin-top:8px;font-size:13px;color:#64748b;">提供粤语班型，适配本地学生语言习惯，减少语言障碍</p>
+            </div>
+          </div>
+        </div>
+      `
+    },
+    {
+      id: 's3',
+      title: '课程结构：班型与课后学习',
+      duration: '8-10分钟',
+      icon: '3',
+      type: 'content_chart_dialogue',
+      quizId: 'quiz3',
+      content: `
+        <div class="section-header">
+          <span class="section-badge">第三章</span>
+          <h1>📚 课程结构：班型与课后学习</h1>
+          <span class="duration">⏱ 预计 8-10 分钟</span>
+        </div>
+
+        <div class="highlight-box">
+          📌 <strong>本章重点：</strong>熟悉S1-S9各阶段班型设置、课时安排及课后学习体系，能准确向家长介绍。
+        </div>
+
+        <div class="card">
+          <div class="card-title">👶 S1（3-4岁）</div>
+          <div class="strategy-grid">
+            <div class="strategy-card">
+              <div class="icon">👥</div>
+              <h4>4-6人小班</h4>
+              <p>小班授课，确保每个孩子都能得到充分关注</p>
+            </div>
+            <div class="strategy-card">
+              <div class="icon">⏱</div>
+              <h4>每节30分钟</h4>
+              <p>符合最低龄孩子的专注力特点，保证互动质量</p>
+            </div>
+          </div>
+          <div class="highlight-box warning">
+            ⚠️ <strong>话术要点（3岁孩子家长）：</strong>S1是专为3-4岁最小年龄段小朋友设计的，4-6人的超小班让老师可以充分关注每个孩子，30分钟课程完全符合这个年龄段的专注力，不会让孩子感到疲倦。
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">👦 S2-S9（4-12岁）</div>
+          <div class="strategy-grid">
+            <div class="strategy-card">
+              <div class="icon">👥</div>
+              <h4>4-8人小班</h4>
+              <p>小班授课（S2为4-6人，S3-S9为6-8人），确保互动质量</p>
+            </div>
+            <div class="strategy-card">
+              <div class="icon">⏱</div>
+              <h4>每节40分钟</h4>
+              <p>S2起每节40分钟，充分探讨数学问题，深度学习</p>
+            </div>
+          </div>
+          <div class="highlight-box warning">
+            ⚠️ <strong>话术要点（4-12岁孩子家长）：</strong>S2-S9是针对4-12岁孩子的，小班制（S2为4-6人、S3-S9为6-8人）可以增加课堂交流深度，每节40分钟的课时能让孩子充分探讨数学问题，更适合这个年龄段的学习需求。
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">📖 课后学习体系——5种巩固方式</div>
+          <div class="qa-list">
+            <div class="qa-item">
+              <div class="qa-q">家长问："除了作业，课后还有什么学习方式？"</div>
+              <div class="qa-a">
+                豌豆提供5种课后巩固方式：<br>
+                1️⃣ <strong>线上基础作业</strong>：巩固当天所学<br>
+                2️⃣ <strong>线下拓展作业</strong>：提升应用能力<br>
+                3️⃣ <strong>《豌豆宝典》分层练习题</strong>：满足不同水平学生的挑战需求<br>
+                4️⃣ <strong>动画总结视频</strong>：帮助孩子形象回顾知识点<br>
+                5️⃣ <strong>小老师讲解视频</strong>：锻炼表达与理解能力
+              </div>
+            </div>
+          </div>
+          <div class="highlight-box success">
+            ✅ <strong>亮点强调：</strong>《豌豆宝典》的分层设计特别贴心，让不同程度的孩子都能找到适合自己的挑战题目，既不会太难打击信心，也不会太简单没有收获。
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">🏫 幼儿园面试能力支持</div>
+          <div class="callout-grid">
+            <div class="callout-item">
+              <div style="font-size:24px;margin-bottom:8px;">🗣️</div>
+              <h4>语言表达</h4>
+              <p style="font-size:13px;color:#64748b;">逻辑训练提升表达条理性</p>
+            </div>
+            <div class="callout-item">
+              <div style="font-size:24px;margin-bottom:8px;">🧩</div>
+              <h4>认知能力</h4>
+              <p style="font-size:13px;color:#64748b;">数学思维提升认知水平</p>
+            </div>
+            <div class="callout-item">
+              <div style="font-size:24px;margin-bottom:8px;">🤝</div>
+              <h4>社交情绪</h4>
+              <p style="font-size:13px;color:#64748b;">互动课堂培养团队协作</p>
+            </div>
+            <div class="callout-item">
+              <div style="font-size:24px;margin-bottom:8px;">🏃</div>
+              <h4>运动协调</h4>
+              <p style="font-size:13px;color:#64748b;">游戏化课堂全方位发展</p>
+            </div>
+          </div>
+        </div>
+      `
+    },
+    {
+      id: 's4',
+      title: '香港升学体系：幼升小与小升中全攻略',
+      duration: '12-15分钟',
+      icon: '4',
+      type: 'content_quiz',
+      quizId: 'quiz4',
+      content: `
+        <div class="section-header">
+          <span class="section-badge">第四章</span>
+          <h1>🎓 香港升学体系：幼升小与小升中全攻略</h1>
+          <span class="duration">⏱ 预计 12-15 分钟</span>
+        </div>
+
+        <div class="highlight-box">
+          📌 <strong>本章重点：</strong>掌握香港幼升小、小升中的升学机制，能够专业解答家长关于升学的问题。
+        </div>
+
+        <div class="card">
+          <div class="card-title">🏠 幼升小申请流程</div>
+          <table class="school-table">
+            <thead>
+              <tr>
+                <th>学校类型</th>
+                <th>申请流程</th>
+                <th>关键时间</th>
+                <th>派位方式</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>直资/私立/国际</strong></td>
+                <td>自主招生→提交申请→面试→发Offer</td>
+                <td>提前1-1.5年开放申请，热门学校截止早</td>
+                <td>自行分配学位，无校网限制</td>
+              </tr>
+              <tr>
+                <td><strong>官立/津贴</strong></td>
+                <td>1. 自行分配学位（约50%学位）<br>2. 统一派位（剩余学位）</td>
+                <td>自行分配：每年9月申请<br>统一派位：入学年1月填志愿，6月出结果</td>
+                <td>自行分配：无校网限制<br>统一派位：电脑随机编号+校网分配（类抽奖）</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="highlight-box success" style="margin-top:16px;">
+            ✅ <strong>叩门机会：</strong>派位不满意时，主动联系心仪学校，携带资料争取剩余学位。派位结果公布后1-2个月内，学校自主筛选。
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">📊 呈分试计分权重</div>
+          <div class="callout-grid">
+            <div class="callout-item">
+              <div style="font-size:24px;margin-bottom:8px;">📖</div>
+              <h4>中文</h4>
+              <p style="font-size:20px;font-weight:800;color:var(--primary);">8分</p>
+            </div>
+            <div class="callout-item">
+              <div style="font-size:24px;margin-bottom:8px;">🔤</div>
+              <h4>英文</h4>
+              <p style="font-size:20px;font-weight:800;color:var(--primary);">8分</p>
+            </div>
+            <div class="callout-item">
+              <div style="font-size:24px;margin-bottom:8px;">🔢</div>
+              <h4>数学</h4>
+              <p style="font-size:20px;font-weight:800;color:var(--primary);">8分</p>
+            </div>
+            <div class="callout-item">
+              <div style="font-size:24px;margin-bottom:8px;">🌍</div>
+              <h4>常识</h4>
+              <p style="font-size:20px;font-weight:800;color:var(--primary);">4分</p>
+            </div>
+            <div class="callout-item">
+              <div style="font-size:24px;margin-bottom:8px;">🎨</div>
+              <h4>视艺/音乐等</h4>
+              <p style="font-size:20px;font-weight:800;color:var(--primary);">2分各</p>
+            </div>
+          </div>
+          <div class="highlight-box warning">
+            ⚠️ <strong>销售切入点：</strong>数学占呈分试满分的8分，比重最高！数学思维训练对呈分试成绩有直接影响，这正是豌豆思维的核心优势所在。
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">🎓 小升中申请类型</div>
+          <table class="school-table">
+            <thead>
+              <tr>
+                <th>学校类型</th>
+                <th>申请流程</th>
+                <th>关键时间</th>
+                <th>筛选依据</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>部分直资/私立/国际</strong></td>
+                <td>自主招生→提交申请→笔试+面试→发Offer</td>
+                <td>提前1年开放申请，各校时间不同</td>
+                <td>学业成绩、面试表现、课外活动、奖项</td>
+              </tr>
+              <tr>
+                <td><strong>官立/津贴/部分直资中学</strong></td>
+                <td>1. 自行分配学位（约30%学位）<br>2. 统一派位（剩余学位）</td>
+                <td>自行分配：每年1月申请<br>统一派位：按呈分试成绩+住址分配</td>
+                <td>自行分配：前2次呈分试成绩、面试、课外活动<br>统一派位：呈分试成绩（Band 1/2/3）、志愿填报</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="highlight-box success" style="margin-top:16px;">
+            ✅ <strong>叩门机会：</strong>派位不满意时，联系学校争取剩余学位。派位结果公布后，学校综合评估。
+          </div>
+        </div>
+      `
+    },
+    {
+      id: 's5',
+      title: '综合考核：实战模拟',
+      duration: '15-20分钟',
+      icon: '5',
+      type: 'content',
+      content: `
+        <div class="section-header">
+          <span class="section-badge">第五章（考核）</span>
+          <h1>🏆 综合考核：实战模拟</h1>
+          <span class="duration">⏱ 预计 15-20 分钟</span>
+        </div>
+
+        <div class="highlight-box warning">
+          ⚠️ <strong>考核说明：</strong>请综合运用前四章所学，完成以下实战模拟任务。得分60分以上方可领取结业证书。
+        </div>
+
+        <div class="card">
+          <div class="card-title">📋 考核场景</div>
+          <p>假设你正在接听一位香港家长的来电。家长孩子今年7岁（S5阶段），家长有以下几个疑问需要你专业解答。</p>
+
+          <div class="qa-list" style="margin-top:16px;">
+            <div class="qa-item">
+              <div class="qa-q">家长问：豌豆思维适合我孩子吗？他7岁，数学成绩普通。</div>
+              <div class="qa-a" style="background:#f8fafc;color:#64748b;">（这是你需要回答的问题，请在下方作答）</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">🎯 回答要求（评分维度）</div>
+          <div class="strategy-grid">
+            <div class="strategy-card">
+              <div class="icon">📐</div>
+              <h4>维度一：产品知识</h4>
+              <p>准确介绍产品定位、班型、师资等核心信息</p>
+            </div>
+            <div class="strategy-card">
+              <div class="icon">💡</div>
+              <h4>维度二：痛点应对</h4>
+              <p>识别家长痛点（成绩普通），给出有说服力的解决方案</p>
+            </div>
+            <div class="strategy-card">
+              <div class="icon">🗣️</div>
+              <h4>维度三：语言流畅</h4>
+              <p>表达完整清晰，字数不少于100字</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="final-task-container">
+          <div class="card">
+            <div class="card-title">✍️ 请在此作答</div>
+            <p style="margin-bottom:12px;font-size:13px;color:#64748b;">综合运用产品知识和痛点话术，给出你的专业回复（建议100-300字）</p>
+            <textarea class="final-task-input" id="finalTaskInput" placeholder="请输入你的回答..."></textarea>
+            <div class="char-counter" id="finalCharCount">0 / 500字</div>
+            <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;">
+              <button class="btn" onclick="submitFinalTask()">📤 提交答案</button>
+              <button class="btn btn-outline" onclick="resetFinalTask()">🔄 重新作答</button>
+            </div>
+          </div>
+          <div class="ai-feedback-panel" id="finalFeedback"></div>
+        </div>
+      `
+    }
+  ]
+};
+
+// ============================================================
+// 互动练习数据
+// ============================================================
+const quizzes = {
+  quiz1: {
+    quizId: 'quiz1',
+    question: '根据布鲁姆博士的研究，以下哪个说法是正确的？',
+    options: [
+      { label: 'A', text: '10岁时儿童智力已发展到成人的50%，因此10岁前是关键期' },
+      { label: 'B', text: '5岁时儿童智力已发展到成人的50%，3-8岁是认知思维的黄金发展期' },
+      { label: 'C', text: '12岁时儿童智力才完全成熟，越晚学习效果越好' },
+      { label: 'D', text: '儿童智力发展与年龄无关，何时学习都一样' }
+    ],
+    correct: 1,
+    feedback_correct: '✅ 完全正确！布鲁姆博士研究发现，5岁时儿童智力已发展到成人的50%，因此3-8岁是认知思维发展的黄金期。这是向家长解释为何要及早进行思维训练的重要依据！',
+    feedback_wrong: '❌ 答案不对哦。正确答案是B。布鲁姆博士的核心数据是：5岁时儿童智力=成人50%，3-8岁是认知思维黄金期。记住这个数据，在介绍产品时很有说服力！'
+  },
+  quiz2: {
+    quizId: 'quiz2',
+    question: '家长说："我想让孩子学豌豆，但我工作太忙，完全没时间辅导他。"你应该如何应对？',
+    options: [
+      { label: 'A', text: '告诉家长这是他们自己的问题，豌豆主要是上课时间教学' },
+      { label: 'B', text: '建议家长找家教来配合豌豆的课程学习' },
+      { label: 'C', text: '介绍豌豆的个性化伴学服务：3位老师服务1个孩子，覆盖课前预习、课中学习、课后复习全流程' },
+      { label: 'D', text: '告诉家长可以让孩子自己看动画视频自学' }
+    ],
+    correct: 2,
+    feedback_correct: '✅ 正确！针对"没时间"这一痛点，最有效的是立刻介绍个性化伴学服务。强调3位老师全程覆盖，家长只需关注进度报告，大大减轻了家长的负担感。',
+    feedback_wrong: '❌ 答案不对。家长说"没时间"是典型的痛点，正确应对是介绍C选项中的个性化伴学服务。记住：家长的顾虑=我们的卖点，要把痛点转化为产品优势！'
+  },
+  quiz3: {
+    isDialogue: true,
+    question: '我想了解一下，我家孩子8岁，一直对数学有点抵触，上课不专心，豌豆思维能帮到我们吗？',
+    scenario: '场景：家长来电咨询，孩子8岁（S6阶段），对数学有抵触情绪，注意力不集中。请运用所学，从课程结构和互动方式角度给出专业回应。',
+    expectedKeywords: [
+      { concept: '游戏化课堂', terms: ['游戏化', '游戏', '趣味', '互动', '游戏教学', '寓教于乐', '有趣', '趣味性'], weight: 18 },
+      { concept: '班型适合性', terms: ['6到8人', '6-8人', '小班', 'S6', '小班教学', '人数少', '每节40', '40分钟'], weight: 18 },
+      { concept: '兴趣激发', terms: ['兴趣', '激发兴趣', '主动学习', '爱上学习', '学习动力', '主动参与', '提升兴趣', '喜欢'], weight: 15 },
+      { concept: '成果保障', terms: ['成绩', '提升', '效果', '保障', '成绩提升', '校内', '前置', '考点', '应用题'], weight: 15 },
+      { concept: '专注力设计', terms: ['专注', '专注力', '注意力', '课时', '时间', '30分钟', '40分钟'], weight: 12 },
+      { concept: '个性化服务', terms: ['伴学', '个性化', '老师', '3位', '三位', '全程', '课后', '预习', '复习'], weight: 12 }
+    ]
+  },
+  quiz4: {
+    quizId: 'quiz4',
+    question: '在香港呈分试中，以下哪个科目的计分权重最高？',
+    options: [
+      { label: 'A', text: '常识（4分）' },
+      { label: 'B', text: '数学（8分）' },
+      { label: 'C', text: '视艺（2分）' },
+      { label: 'D', text: '体育（不计分）' }
+    ],
+    correct: 1,
+    feedback_correct: '✅ 正确！数学在呈分试中占8分，与中文、英文并列最高分。这是向香港家长推介豌豆思维的重要切入点——数学思维训练对呈分试成绩有直接、显著的影响！',
+    feedback_wrong: '❌ 答案不对。正确答案是B，数学占呈分试8分，与中文、英文并列最高。记住这个数据非常重要！它是我们向香港家长推销豌豆数学课的核心依据。'
+  }
+};
+
+// ============================================================
+// 状态管理
+// ============================================================
+const LS_PREFIX = 'wb_hk_product_review_v2';
+let currentSection = 0;
+let completedSections = new Set();
+let quiz1Answered = false;
+let quiz2Answered = false;
+let quiz3Answered = false; let quiz3Score = 0;
+let quiz4Answered = false;
+let finalTaskSubmitted = false;
+let finalScore = 0;
+
+let studySeconds = 0;
+let timerInterval = null;
+
+// ============================================================
+// 初始化
+// ============================================================
+function init() {
+  renderSidebar();
+  renderSections();
+  navigateTo(0);
+  setupQuizListeners();
+  setupFinalTaskListener();
+  startTimer();
+  loadNotes();
+  loadProgress();
+}
+
+function renderSidebar() {
+  const nav = document.getElementById('sidebarNav');
+  nav.innerHTML = courseData.sections.map((s, i) => `
+    <div class="nav-section" data-index="${i}" onclick="navigateTo(${i})">
+      <div class="nav-icon">${s.icon}</div>
+      <div class="nav-info">
+        <div class="nav-label">${s.title}</div>
+        <div class="nav-sub">⏱ ${s.duration}</div>
+      </div>
+    </div>
+  `).join('');
+  updateSidebarLocks();
+}
+
+function updateSidebarLocks() {
+  document.querySelectorAll('.nav-section').forEach((el, i) => {
+    const check = canNavigateTo(i);
+    if (!check.ok && i !== currentSection) {
+      el.classList.add('locked');
+    } else {
+      el.classList.remove('locked');
+    }
+  });
+}
+
+function renderSections() {
+  const main = document.getElementById('mainContent');
+  main.innerHTML = courseData.sections.map((s, i) => `
+    <div class="section" data-section="${i}">
+      ${s.content}
+      ${s.type === 'content_quiz' ? renderQuiz(quizzes[s.quizId], i) : ''}
+      ${s.type === 'content_chart_dialogue' ? renderDialogue(quizzes[s.quizId], i) : ''}
+      <div class="section-nav-buttons">
+        <div>${i > 0 ? `<button class="btn btn-outline" onclick="navigateTo(${i-1})">← 上一章</button>` : ''}</div>
+        <div>${i < courseData.sections.length - 1 ? `<button class="btn" onclick="markComplete(${i});navigateTo(${i+1})">下一章 →</button>` : `<button class="btn btn-success" id="completeCourseBtn" onclick="tryCompleteCourse(${i})">✓ 完成课程</button>`}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// 导航与锁定
+// ============================================================
+function canNavigateTo(index) {
+  if (index >= 1 && !quiz1Answered) return { ok: false, msg: '请先完成第1章的选择题练习' };
+  if (index >= 2 && !quiz2Answered) return { ok: false, msg: '请先完成第2章的选择题练习' };
+  if (index >= 3 && (!quiz3Answered || quiz3Score < 60)) return { ok: false, msg: 'AI模拟对话得分需达60分才能进入下一章' };
+  if (index >= 4 && !quiz4Answered) return { ok: false, msg: '请先完成第4章的选择题练习' };
+  return { ok: true };
+}
+
+function navigateTo(index) {
+  const check = canNavigateTo(index);
+  if (!check.ok) {
+    showToast('🔒 ' + check.msg, 'warning');
+    return;
+  }
+  currentSection = index;
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-section').forEach(n => n.classList.remove('active'));
+  const section = document.querySelector(`.section[data-section="${index}"]`);
+  if (section) section.classList.add('active');
+  const navItem = document.querySelector(`.nav-section[data-index="${index}"]`);
+  if (navItem) navItem.classList.add('active');
+  updateProgress();
+  updateNotesForSection(index);
+  saveProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+  const mhTitle = document.getElementById('mhTitle');
+  if (mhTitle) mhTitle.textContent = courseData.sections[index].title;
+}
+
+function markComplete(index) {
+  completedSections.add(index);
+  updateProgress();
+  saveProgress();
+  showToast('「' + courseData.sections[index].title + '」已完成 ✓', 'success');
+  checkCertificate();
+}
+
+function tryCompleteCourse(index) {
+  if (!finalTaskSubmitted) {
+    showToast('请先完成综合考核并提交答案', 'warning');
+    return;
+  }
+  if (finalScore < 60) {
+    showToast('综合考核得分未达60分（当前' + finalScore + '分），请重新作答', 'warning');
+    return;
+  }
+  markComplete(index);
+}
+
+function updateProgress() {
+  const total = courseData.sections.length;
+  const viewed = new Set([...completedSections, currentSection]);
+  const pct = Math.round((viewed.size / total) * 100);
+  document.getElementById('progressPercent').textContent = pct + '%';
+  document.getElementById('progressFill').style.width = pct + '%';
+  const mpbFill = document.getElementById('mpbFill');
+  if (mpbFill) mpbFill.style.width = pct + '%';
+  document.querySelectorAll('.nav-section').forEach((el, i) => {
+    if (completedSections.has(i)) el.classList.add('completed');
+  });
+}
+
+// ============================================================
+// 选择题组件
+// ============================================================
+function renderQuiz(quiz, sectionIndex) {
+  if (!quiz || quiz.isDialogue) return '';
+  return `
+    <div class="quiz-card" id="quiz-${quiz.quizId || sectionIndex}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <span style="font-size:24px;">✍️</span>
+        <h3 style="font-size:16px;font-weight:700;">互动练习：选择题</h3>
+      </div>
+      <div class="quiz-question">${quiz.question}</div>
+      <div class="quiz-options">
+        ${quiz.options.map((opt, oi) => `
+          <div class="quiz-option" data-option="${oi}" onclick="selectQuizOption(this, ${oi}, '${quiz.quizId || sectionIndex}')">
+            <span class="quiz-option-label">${opt.label}</span>
+            <span>${opt.text}</span>
+          </div>
+        `).join('')}
+      </div>
+      <div class="quiz-feedback" id="feedback-${quiz.quizId || sectionIndex}"></div>
+    </div>
+  `;
+}
+
+function selectQuizOption(el, optionIndex, quizId) {
+  const quiz = quizzes[quizId];
+  if (!quiz) return;
+
+  // 检查是否已回答
+  if (quizId === 'quiz1' && quiz1Answered) return;
+  if (quizId === 'quiz2' && quiz2Answered) return;
+  if (quizId === 'quiz4' && quiz4Answered) return;
+
+  const container = document.getElementById('quiz-' + quizId);
+  const feedback = document.getElementById('feedback-' + quizId);
+  const options = container.querySelectorAll('.quiz-option');
+  const isCorrect = optionIndex === quiz.correct;
+
+  // 高亮选项
+  options.forEach((opt, i) => {
+    opt.classList.remove('selected', 'correct', 'wrong');
+    if (i === quiz.correct) opt.classList.add('correct');
+  });
+  if (!isCorrect) el.classList.add('wrong');
+
+  // 显示反馈
+  feedback.innerHTML = isCorrect ? quiz.feedback_correct : quiz.feedback_wrong;
+  feedback.className = 'quiz-feedback show ' + (isCorrect ? 'correct' : 'wrong');
+  container.classList.add(isCorrect ? 'answered-correct' : 'answered-wrong');
+
+  // 标记已回答
+  if (quizId === 'quiz1') quiz1Answered = true;
+  if (quizId === 'quiz2') quiz2Answered = true;
+  if (quizId === 'quiz4') quiz4Answered = true;
+
+  saveProgress();
+  updateSidebarLocks();
+
+  if (isCorrect) showToast('🎉 回答正确！', 'success');
+  else showToast('💪 答案不对，但已解锁正确答案，继续加油！', 'info');
+}
+
+// ============================================================
+// AI 模拟对话组件
+// ============================================================
+function renderDialogue(quiz, sectionIndex) {
+  if (!quiz || !quiz.isDialogue) return '';
+  return `
+    <div class="dialogue-container" id="dialogue-container">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <span style="font-size:24px;">🤖</span>
+        <h3 style="font-size:16px;font-weight:700;">互动练习：AI模拟对话（Ctrl+Enter 提交）</h3>
+      </div>
+      <div class="dialogue-scenario"><strong>📋 场景设定：</strong>${quiz.scenario}</div>
+      <div class="customer-bubble">💬 家长说："${quiz.question}"</div>
+      <textarea class="reply-input" id="dialogueInput" placeholder="请运用所学策略组织回应（建议60字以上）..."></textarea>
+      <div class="dialogue-actions">
+        <button class="btn" id="submitDialogueBtn" onclick="submitDialogue()">📤 提交回答</button>
+        <button class="btn btn-outline" onclick="resetDialogue()">🔄 重新作答</button>
+      </div>
+      <div class="ai-feedback-panel" id="dialogueFeedback"></div>
+    </div>
+  `;
+}
+
+function submitDialogue() {
+  const input = document.getElementById('dialogueInput');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text || text.length < 10) {
+    showToast('请输入至少10个字的回答', 'warning');
+    return;
+  }
+
+  const quiz = quizzes['quiz3'];
+  const lower = text.toLowerCase();
+  let totalScore = 0;
+  const results = [];
+
+  quiz.expectedKeywords.forEach(dim => {
+    const found = dim.terms.some(term => lower.includes(term.toLowerCase()) || text.includes(term));
+    results.push({ concept: dim.concept, found, weight: dim.weight });
+    if (found) totalScore += dim.weight;
+  });
+
+  // 长度加分
+  if (text.length >= 60) totalScore += 5;
+  if (text.length >= 120) totalScore += 5;
+  totalScore = Math.min(100, totalScore);
+
+  quiz3Score = totalScore;
+  quiz3Answered = true;
+  saveProgress();
+  updateSidebarLocks();
+
+  const scoreClass = totalScore >= 80 ? 'high' : totalScore >= 60 ? 'medium' : 'low';
+  const scoreEmoji = totalScore >= 80 ? '🏆' : totalScore >= 60 ? '👍' : '💪';
+
+  const feedbackEl = document.getElementById('dialogueFeedback');
+  feedbackEl.innerHTML = `
+    <div class="score-display">
+      <div class="score-circle ${scoreClass}">${totalScore}</div>
+      <p style="margin-top:8px;font-weight:700;">${scoreEmoji} 本次得分：${totalScore}分</p>
+      ${totalScore < 60 ? '<p style="color:#ef4444;font-size:13px;margin-top:4px;">⚠️ 未达60分，请重新作答后才能进入下一章</p>' : '<p style="color:#10b981;font-size:13px;margin-top:4px;">✅ 已达标，可进入下一章</p>'}
+    </div>
+    <div style="margin:16px 0;">
+      <p style="font-weight:700;margin-bottom:8px;">📊 维度覆盖情况：</p>
+      <div class="keywords-result">
+        ${results.map(r => `<span class="keyword-tag ${r.found ? 'found' : 'missing'}">${r.found ? '✓' : '✗'} ${r.concept}（${r.weight}分）</span>`).join('')}
+        <span class="keyword-tag ${text.length >= 120 ? 'found' : text.length >= 60 ? 'found' : 'missing'}">${text.length >= 120 ? '✓' : text.length >= 60 ? '✓' : '✗'} 字数（${text.length}字，+${text.length >= 120 ? 10 : text.length >= 60 ? 5 : 0}分）</span>
+      </div>
+    </div>
+    <div style="margin-top:12px;padding:12px;background:#f0f9ff;border-radius:8px;font-size:13px;color:#0369a1;">
+      <strong>💡 满分参考答案：</strong><br><br>
+      家长您好，非常理解您的担忧，孩子8岁正处于数学思维发展的关键期，对数学产生抵触、上课不专心其实是不少小朋友都会遇到的情况，您不用太焦虑。<br><br>
+      您家孩子8岁正好对应我们<strong>豌豆思维S6阶段</strong>的课程，采用<strong>6-8人精品小班</strong>教学，每节课<strong>40分钟</strong>。小班模式下老师能够关注到每一位学员的状态，确保孩子全程参与、不走神。<br><br>
+      针对孩子"抵触数学"和"注意力不集中"这两大痛点，我们的<strong>游戏化课堂</strong>通过趣味动画和互动环节来激发学习兴趣，将抽象的数学概念转化为孩子爱玩的闯关游戏，让孩子在不知不觉中爱上数学；同时<strong>老师与学生高频互动</strong>的上课模式，也能有效抓住孩子的注意力，解决"上课不专心"的问题。<br><br>
+      而且豌豆思维提供<strong>三位老师全程伴学服务</strong>——上课前预习引导、课堂中实时关注、课后专属巩固复习，完全根据孩子的学习情况个性化调整，确保每个知识点都能扎实掌握。<br><br>
+      另外我们的课程内容<strong>前置校内知识点</strong>，紧密衔接香港本地学校教材，不仅能帮助孩子在校内考试中取得好成绩，还能为未来的<strong>呈分试</strong>打下坚实基础。很多原本对数学没兴趣的孩子，在上了豌豆思维后都明显变得主动、自信了。您可以先给孩子安排一节试听课，让他亲身体验一下这种趣味学习的方式，相信会有惊喜的！
+    </div>
+  `;
+  feedbackEl.classList.add('show');
+
+  const btn = document.getElementById('submitDialogueBtn');
+  if (btn) btn.disabled = true;
+
+  if (totalScore >= 60) showToast('🎉 得分 ' + totalScore + ' 分，已解锁下一章！', 'success');
+  else showToast('💪 得分 ' + totalScore + ' 分，未达60分，请重新作答', 'warning');
+}
+
+function resetDialogue() {
+  const input = document.getElementById('dialogueInput');
+  if (input) { input.value = ''; input.disabled = false; }
+  const feedback = document.getElementById('dialogueFeedback');
+  if (feedback) { feedback.innerHTML = ''; feedback.classList.remove('show'); }
+  const btn = document.getElementById('submitDialogueBtn');
+  if (btn) btn.disabled = false;
+  quiz3Answered = false;
+  quiz3Score = 0;
+  saveProgress();
+  updateSidebarLocks();
+}
+
+// ============================================================
+// 终极考核组件
+// ============================================================
+function setupFinalTaskListener() {
+  const input = document.getElementById('finalTaskInput');
+  if (input) input.addEventListener('input', function() {
+    document.getElementById('finalCharCount').textContent = this.value.length + ' / 500字';
+  });
+}
+
+function submitFinalTask() {
+  const input = document.getElementById('finalTaskInput');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text || text.length < 30) {
+    showToast('请输入至少30个字的回答', 'warning');
+    return;
+  }
+
+  const lower = text.toLowerCase();
+
+  // 维度一：产品知识
+  const dims1 = [
+    { name: '年龄/阶段', terms: ['7岁', 'S5', '6到8', '6-8', '小班', '二年级', '三年级', '4到6', '4-6'] },
+    { name: '师资专业', terms: ['师范', '985', '211', '8.3%', '筛选', '培训', '专业老师', '优质师资'] },
+    { name: '课程特色', terms: ['游戏化', '互动', '趣味', '动画', '宝典', '分层', '前置', '校内'] },
+    { name: '伴学服务', terms: ['伴学', '3位', '三位', '课前', '课后', '预习', '复习', '全程'] }
+  ];
+
+  // 维度二：痛点应对
+  const dims2 = [
+    { name: '兴趣激发', terms: ['兴趣', '激发', '喜欢', '主动', '爱上', '不排斥', '克服', '接受'] },
+    { name: '成绩提升', terms: ['成绩', '提升', '进步', '效果', '保障', '成果', '考点', '校内'] },
+    { name: '呈分试关联', terms: ['呈分试', '数学8分', '升学', '小升中', '考试', '分数'] },
+    { name: '解决顾虑', terms: ['放心', '专家', '保障', '不用担心', '不必担心', '解决', '应对', '方案'] }
+  ];
+
+  let score1 = 0, score2 = 0;
+  const r1 = [], r2 = [];
+  dims1.forEach(d => {
+    const found = d.terms.some(t => text.includes(t) || lower.includes(t.toLowerCase()));
+    r1.push({ name: d.name, found });
+    if (found) score1 += 25;
+  });
+  dims2.forEach(d => {
+    const found = d.terms.some(t => text.includes(t) || lower.includes(t.toLowerCase()));
+    r2.push({ name: d.name, found });
+    if (found) score2 += 25;
+  });
+
+  // 维度三：流畅度（字数阶梯）
+  let score3 = 0;
+  if (text.length >= 200) score3 = 100;
+  else if (text.length >= 150) score3 = 85;
+  else if (text.length >= 100) score3 = 70;
+  else if (text.length >= 60) score3 = 55;
+  else score3 = 30;
+
+  const total = Math.round((score1 + score2 + score3) / 3);
+  finalScore = total;
+  finalTaskSubmitted = true;
+  saveProgress();
+
+  const scoreClass = total >= 80 ? 'high' : total >= 60 ? 'medium' : 'low';
+  const emoji = total >= 80 ? '🏆' : total >= 60 ? '👍' : '💪';
+
+  const feedbackEl = document.getElementById('finalFeedback');
+  feedbackEl.innerHTML = `
+    <div class="score-display" style="margin-bottom:20px;">
+      <div class="score-circle ${scoreClass}">${total}</div>
+      <p style="margin-top:8px;font-weight:700;font-size:16px;">${emoji} 综合考核得分：${total}分</p>
+      ${total < 60 ? '<p style="color:#ef4444;margin-top:4px;font-size:13px;">⚠️ 得分未达60分，请重新作答</p>' : '<p style="color:#10b981;margin-top:4px;font-size:13px;">✅ 考核通过！可以领取结业证书啦</p>'}
+    </div>
+    <div class="eval-dimensions">
+      <div class="eval-dim">
+        <h4>📐 维度一：产品知识</h4>
+        <div class="score-circle ${score1>=80?'high':score1>=60?'medium':'low'}" style="width:44px;height:44px;font-size:18px;margin:8px auto;">${score1}</div>
+        <div class="keywords-result" style="justify-content:center;margin-top:8px;">
+          ${r1.map(r => `<span class="keyword-tag ${r.found?'found':'missing'}">${r.found?'✓':'✗'} ${r.name}</span>`).join('')}
+        </div>
+      </div>
+      <div class="eval-dim">
+        <h4>💡 维度二：痛点应对</h4>
+        <div class="score-circle ${score2>=80?'high':score2>=60?'medium':'low'}" style="width:44px;height:44px;font-size:18px;margin:8px auto;">${score2}</div>
+        <div class="keywords-result" style="justify-content:center;margin-top:8px;">
+          ${r2.map(r => `<span class="keyword-tag ${r.found?'found':'missing'}">${r.found?'✓':'✗'} ${r.name}</span>`).join('')}
+        </div>
+      </div>
+      <div class="eval-dim">
+        <h4>🗣️ 维度三：流畅度</h4>
+        <div class="score-circle ${score3>=80?'high':score3>=60?'medium':'low'}" style="width:44px;height:44px;font-size:18px;margin:8px auto;">${score3}</div>
+        <p style="font-size:13px;color:#64748b;margin-top:8px;">当前字数：${text.length}字</p>
+        <p style="font-size:11px;color:#94a3b8;">（100字=70分，200字以上=100分）</p>
+      </div>
+    </div>
+  `;
+  feedbackEl.classList.add('show');
+
+  if (total >= 60) showToast('🎉 考核通过！得分 ' + total + ' 分，点击"完成课程"领取证书', 'success');
+  else showToast('💪 得分 ' + total + ' 分，未达60分，请重新作答', 'warning');
+}
+
+function resetFinalTask() {
+  const input = document.getElementById('finalTaskInput');
+  if (input) { input.value = ''; }
+  const charCount = document.getElementById('finalCharCount');
+  if (charCount) charCount.textContent = '0 / 500字';
+  const feedback = document.getElementById('finalFeedback');
+  if (feedback) { feedback.innerHTML = ''; feedback.classList.remove('show'); }
+  finalTaskSubmitted = false;
+  finalScore = 0;
+  saveProgress();
+}
+
+// ============================================================
+// 键盘快捷键
+// ============================================================
+function setupQuizListeners() {
+  document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.key === 'Enter') {
+      const dialogueInput = document.getElementById('dialogueInput');
+      if (dialogueInput && document.activeElement === dialogueInput) submitDialogue();
+    }
+  });
+}
+
+// ============================================================
+// 计时器
+// ============================================================
+function startTimer() {
+  const saved = localStorage.getItem(LS_PREFIX + '_study_seconds');
+  if (saved) studySeconds = parseInt(saved);
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    studySeconds++;
+    updateTimerDisplay();
+    if (studySeconds % 10 === 0) localStorage.setItem(LS_PREFIX + '_study_seconds', studySeconds);
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const mins = Math.floor(studySeconds / 60);
+  const secs = studySeconds % 60;
+  const timeStr = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+  const el = document.getElementById('timerDisplay');
+  if (el) el.textContent = timeStr;
+  const mhTimer = document.getElementById('mhTimer');
+  if (mhTimer) mhTimer.textContent = '⏱ ' + timeStr;
+}
+
+// ============================================================
+// 笔记
+// ============================================================
+function toggleNotes() {
+  document.getElementById('notesPanel').classList.toggle('open');
+}
+function updateNotesForSection(index) {
+  document.getElementById('notesChapterLabel').textContent = courseData.sections[index].title;
+  const saved = JSON.parse(localStorage.getItem(LS_PREFIX + '_notes') || '{}');
+  document.getElementById('notesTextarea').value = saved[index] || '';
+}
+function loadNotes() {
+  const saved = JSON.parse(localStorage.getItem(LS_PREFIX + '_notes') || '{}');
+  const ta = document.getElementById('notesTextarea');
+  if (ta) {
+    ta.value = saved[currentSection] || '';
+    ta.addEventListener('input', function() {
+      const all = JSON.parse(localStorage.getItem(LS_PREFIX + '_notes') || '{}');
+      all[currentSection] = this.value;
+      localStorage.setItem(LS_PREFIX + '_notes', JSON.stringify(all));
+    });
+  }
+}
+
+// ============================================================
+// 进度持久化
+// ============================================================
+function saveProgress() {
+  const state = {
+    completedSections: [...completedSections],
+    quiz1Answered, quiz2Answered, quiz3Answered, quiz3Score,
+    quiz4Answered, finalTaskSubmitted, finalScore
+  };
+  localStorage.setItem(LS_PREFIX + '_progress', JSON.stringify(state));
+}
+
+function loadProgress() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(LS_PREFIX + '_progress'));
+    if (saved) {
+      completedSections = new Set(saved.completedSections || []);
+      quiz1Answered = saved.quiz1Answered || false;
+      quiz2Answered = saved.quiz2Answered || false;
+      quiz3Answered = saved.quiz3Answered || false;
+      quiz3Score = saved.quiz3Score || 0;
+      quiz4Answered = saved.quiz4Answered || false;
+      finalTaskSubmitted = saved.finalTaskSubmitted || false;
+      finalScore = saved.finalScore || 0;
+      updateProgress();
+      updateSidebarLocks();
+    }
+  } catch (e) {}
+}
+
+// ============================================================
+// 结业证书
+// ============================================================
+function checkCertificate() {
+  const allDone = completedSections.size >= courseData.sections.length
+    && quiz1Answered && quiz2Answered
+    && quiz3Answered && quiz3Score >= 60
+    && quiz4Answered
+    && finalTaskSubmitted && finalScore >= 60;
+  if (allDone) {
+    setTimeout(() => {
+      showToast('🏆 恭喜完成全部课程！点击领取结业证书', 'success');
+      document.getElementById('certStudentName').textContent = '请填写姓名';
+      document.getElementById('certScore').textContent = '综合评定：通过 · AI模拟：' + quiz3Score + '分';
+      document.getElementById('certFinalScore').textContent = '终极考核得分：' + finalScore + ' 分';
+      document.getElementById('certDate').textContent = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+      document.getElementById('certOverlay').style.display = 'flex';
+    }, 1000);
+  }
+}
+
+function closeCertificate() {
+  document.getElementById('certOverlay').style.display = 'none';
+}
+
+function printCertificate() {
+  const cert = document.getElementById('certPaper');
+  const win = window.open('', '_blank', 'width=750,height=600');
+  win.document.write('<html><head><meta charset="UTF-8"><title>结业证书</title><style>');
+  win.document.write('body{font-family:"PingFang SC","Microsoft YaHei",sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;background:#f1f5f9;}');
+  win.document.write('.cert{background:#fff;width:700px;padding:48px 36px;text-align:center;border:2px solid #e2e8f0;border-radius:12px;}');
+  win.document.write('.cert h1{font-size:28px;color:#0369a1;margin-bottom:4px;}');
+  win.document.write('.cert .sub{font-size:12px;color:#64748b;letter-spacing:0.1em;margin-bottom:24px;}');
+  win.document.write('.cert .body{font-size:15px;line-height:2;color:#1e293b;}');
+  win.document.write('.cert .name{display:inline-block;border-bottom:2px solid #0ea5e9;min-width:120px;padding:4px 12px;margin:0 4px;}');
+  win.document.write('.cert .course{font-weight:700;color:#0369a1;margin:8px 0;}');
+  win.document.write('.cert .score{margin:20px 0 8px;font-size:16px;font-weight:600;color:#10b981;}');
+  win.document.write('.cert .final-score{margin:0 0 12px;font-size:14px;font-weight:600;color:#0ea5e9;}');
+  win.document.write('.cert .footer{display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-top:32px;border-top:1px solid #e2e8f0;padding-top:16px;}');
+  win.document.write('</style></head><body><div class="cert">');
+  win.document.write(cert.innerHTML.replace(/<button[^>]*>.*?<\/button>/gs, ''));
+  win.document.write('</div></body></html>');
+  win.document.close();
+  setTimeout(() => win.print(), 500);
+}
+
+// ============================================================
+// Toast & Sidebar Toggle
+// ============================================================
+function showToast(msg, type) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  const toast = document.createElement('div');
+  toast.className = 'toast ' + type;
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2500);
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
