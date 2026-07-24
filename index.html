@@ -919,9 +919,12 @@ const LS_PREFIX = 'wb_hk_product_review_v2';
 let currentSection = 0;
 let completedSections = new Set();
 let quiz1Answered = false;
+let quiz1Selected = -1;
 let quiz2Answered = false;
+let quiz2Selected = -1;
 let quiz3Answered = false; let quiz3Score = 0;
 let quiz4Answered = false;
+let quiz4Selected = -1;
 let finalTaskSubmitted = false;
 let finalScore = 0;
 
@@ -934,12 +937,11 @@ let timerInterval = null;
 function init() {
   renderSidebar();
   renderSections();
-  navigateTo(0);
+  loadProgress();
   setupQuizListeners();
   setupFinalTaskListener();
   startTimer();
   loadNotes();
-  loadProgress();
 }
 
 function renderSidebar() {
@@ -1101,9 +1103,9 @@ function selectQuizOption(el, optionIndex, quizId) {
   container.classList.add(isCorrect ? 'answered-correct' : 'answered-wrong');
 
   // 标记已回答
-  if (quizId === 'quiz1') quiz1Answered = true;
-  if (quizId === 'quiz2') quiz2Answered = true;
-  if (quizId === 'quiz4') quiz4Answered = true;
+  if (quizId === 'quiz1') { quiz1Answered = true; quiz1Selected = optionIndex; }
+  if (quizId === 'quiz2') { quiz2Answered = true; quiz2Selected = optionIndex; }
+  if (quizId === 'quiz4') { quiz4Answered = true; quiz4Selected = optionIndex; }
 
   saveProgress();
   updateSidebarLocks();
@@ -1393,8 +1395,10 @@ function loadNotes() {
 function saveProgress() {
   const state = {
     completedSections: [...completedSections],
-    quiz1Answered, quiz2Answered, quiz3Answered, quiz3Score,
-    quiz4Answered, finalTaskSubmitted, finalScore
+    quiz1Answered, quiz1Selected, quiz2Answered, quiz2Selected,
+    quiz3Answered, quiz3Score,
+    quiz4Answered, quiz4Selected, finalTaskSubmitted, finalScore,
+    currentSection
   };
   localStorage.setItem(LS_PREFIX + '_progress', JSON.stringify(state));
 }
@@ -1405,16 +1409,48 @@ function loadProgress() {
     if (saved) {
       completedSections = new Set(saved.completedSections || []);
       quiz1Answered = saved.quiz1Answered || false;
+      quiz1Selected = saved.quiz1Selected !== undefined ? saved.quiz1Selected : -1;
       quiz2Answered = saved.quiz2Answered || false;
+      quiz2Selected = saved.quiz2Selected !== undefined ? saved.quiz2Selected : -1;
       quiz3Answered = saved.quiz3Answered || false;
       quiz3Score = saved.quiz3Score || 0;
       quiz4Answered = saved.quiz4Answered || false;
+      quiz4Selected = saved.quiz4Selected !== undefined ? saved.quiz4Selected : -1;
       finalTaskSubmitted = saved.finalTaskSubmitted || false;
       finalScore = saved.finalScore || 0;
+      if (saved.currentSection !== undefined) currentSection = saved.currentSection;
       updateProgress();
       updateSidebarLocks();
+      setTimeout(() => { navigateTo(currentSection); restoreQuizUI(); }, 100);
     }
   } catch (e) {}
+}
+
+function restoreQuizUI() {
+  ['quiz1','quiz2','quiz4'].forEach(qid => {
+    const answered = (qid === 'quiz1' && quiz1Answered) || (qid === 'quiz2' && quiz2Answered) || (qid === 'quiz4' && quiz4Answered);
+    const selected = qid === 'quiz1' ? quiz1Selected : qid === 'quiz2' ? quiz2Selected : quiz4Selected;
+    if (!answered || selected < 0) return;
+    const quizCard = document.getElementById('quiz-' + qid);
+    if (!quizCard) return;
+    const quiz = quizzes[qid];
+    if (!quiz) return;
+    const feedback = document.getElementById('feedback-' + qid);
+    const options = quizCard.querySelectorAll('.quiz-option');
+    options.forEach(o => o.style.pointerEvents = 'none');
+    const sel = options[selected];
+    if (sel) {
+      options.forEach((opt, i) => {
+        if (i === quiz.correct) opt.classList.add('correct');
+      });
+      if (selected !== quiz.correct) sel.classList.add('wrong');
+      quizCard.classList.add(selected === quiz.correct ? 'answered-correct' : 'answered-wrong');
+      if (feedback) {
+        feedback.innerHTML = selected === quiz.correct ? quiz.feedback_correct : quiz.feedback_wrong;
+        feedback.className = 'quiz-feedback show ' + (selected === quiz.correct ? 'correct' : 'wrong');
+      }
+    }
+  });
 }
 
 // ============================================================
