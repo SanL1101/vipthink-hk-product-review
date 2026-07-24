@@ -1419,11 +1419,25 @@ function loadProgress() {
       finalTaskSubmitted = saved.finalTaskSubmitted || false;
       finalScore = saved.finalScore || 0;
       if (saved.currentSection !== undefined) currentSection = saved.currentSection;
+      // Migration: old data without quiz selected indices → can't restore quiz UI, reset all quiz states
+      if ((quiz1Answered && quiz1Selected < 0) || (quiz2Answered && quiz2Selected < 0) || (quiz4Answered && quiz4Selected < 0)) {
+        quiz1Answered = false; quiz1Selected = -1;
+        quiz2Answered = false; quiz2Selected = -1;
+        quiz3Answered = false; quiz3Score = 0;
+        quiz4Answered = false; quiz4Selected = -1;
+      }
+      // Validate currentSection is still accessible after potential resets
+      const navCheck = canNavigateTo(currentSection);
+      if (!navCheck.ok) currentSection = 0;
       updateProgress();
       updateSidebarLocks();
       setTimeout(() => { navigateTo(currentSection); restoreQuizUI(); }, 100);
+    } else {
+      navigateTo(0);
     }
-  } catch (e) {}
+  } catch (e) {
+    navigateTo(0);
+  }
 }
 
 function restoreQuizUI() {
