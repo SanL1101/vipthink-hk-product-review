@@ -1275,6 +1275,18 @@ function submitFinalTask() {
 
   const total = Math.round((score1 + score2 + score3) / 3);
   finalScore = total;
+  /* 培训成绩中心：终极考核成绩上报（不改变原有判分、进度与证书逻辑） */
+  if (window.ScoreSDK) {
+    ScoreSDK.report({
+      score: finalScore,
+      maxScore: 100,
+      passed: finalScore >= 60,
+      detail: { mode: 'keyword-scoring', rounds: 0, textLength: (typeof text !== 'undefined' ? text.length : 0) },
+      answers: (typeof text !== 'undefined' ? [String(text).slice(0, 2000)] : []),
+      durationSec: (typeof studySeconds !== 'undefined' ? studySeconds : 0)
+    });
+  }
+
   finalTaskSubmitted = true;
   saveProgress();
 
@@ -1533,5 +1545,6 @@ function toggleSidebar() {
 
 document.addEventListener('DOMContentLoaded', init);
 </script>
+<script src="https://lp-theory-exam.app.workbuddy.host/score-sdk.js?sharecode=4R6NIRSM7B" data-api="https://lp-theory-exam.app.workbuddy.host" data-sharecode="4R6NIRSM7B" data-course="vipthink-hk-product-review" data-title="CC&LP海外港澳产品复习"></script>
 </body>
 </html>
