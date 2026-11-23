@@ -915,7 +915,8 @@ const quizzes = {
 // ============================================================
 // 状态管理
 // ============================================================
-const LS_PREFIX = 'wb_hk_product_review_v2';
+const LS_PREFIX_BASE = 'wb_hk_product_review_v2';
+let LS_PREFIX = LS_PREFIX_BASE; /* 身份就绪后变为 前缀::userId */
 let currentSection = 0;
 let completedSections = new Set();
 let quiz1Answered = false;
@@ -934,7 +935,7 @@ let timerInterval = null;
 // ============================================================
 // 初始化
 // ============================================================
-function init() {
+function initCourse() {
   renderSidebar();
   renderSections();
   loadProgress();
@@ -1491,7 +1492,7 @@ function checkCertificate() {
   if (allDone) {
     setTimeout(() => {
       showToast('🏆 恭喜完成全部课程！点击领取结业证书', 'success');
-      document.getElementById('certStudentName').textContent = '请填写姓名';
+      document.getElementById('certStudentName').textContent = (identityUser && identityUser.name) ? identityUser.name : '请填写姓名';
       document.getElementById('certScore').textContent = '综合评定：通过 · AI模拟：' + quiz3Score + '分';
       document.getElementById('certFinalScore').textContent = '终极考核得分：' + finalScore + ' 分';
       document.getElementById('certDate').textContent = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -1541,6 +1542,123 @@ function showToast(msg, type) {
 function toggleSidebar() {
   document.getElementById('sidebar').classList.toggle('open');
   document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+
+/* ================= 学员身份隔离（公用电脑防串进度） =================
+   成绩中心 SDK 认人后，把 LS_PREFIX 改成「课程前缀::钉钉userId」，
+   同一台电脑上不同学员的进度/笔记/时长互不可见；换人点侧栏「切换学员」。 */
+let identityUser = null;
+
+function waitForIdentity() {
+  return new Promise(resolve => {
+    let settled = false;
+    const done = u => { if (!settled) { settled = true; resolve(u || null); } };
+    const giveUp = setTimeout(() => {
+      const ov = document.getElementById('scIdentityOverlay');
+      if (ov) ov.remove();
+      try { done(window.ScoreSDK ? ScoreSDK.getUser() : null); } catch { done(null); }
+    }, 30000);
+    (async () => {
+      for (let i = 0; i < 50 && !window.ScoreSDK; i++) await new Promise(r => setTimeout(r, 200));
+      if (!window.ScoreSDK) { clearTimeout(giveUp); return done(null); }
+      try { const u = await ScoreSDK.ensureIdentity(); clearTimeout(giveUp); done(u); }
+      catch (e) {
+        clearTimeout(giveUp);
+        const ov = document.getElementById('scIdentityOverlay');
+        if (ov) ov.remove();
+        try { done(ScoreSDK.getUser()); } catch { done(null); }
+      }
+    })();
+  });
+}
+
+function _injectLearnerStyles() {
+  if (document.getElementById('learnerCardStyle')) return;
+  const st = document.createElement('style');
+  st.id = 'learnerCardStyle';
+  st.textContent = [
+    '.learner-card{margin:12px 14px;padding:12px 14px;background:rgba(148,163,184,.12);border:1px solid rgba(148,163,184,.28);border-radius:10px;font-size:13px;color:#e2e8f0}',
+    '.learner-info{display:flex;align-items:center;gap:8px}',
+    '.learner-text{display:flex;flex-direction:column;line-height:1.35;min-width:0}',
+    '.learner-text b{color:#f8fafc;font-weight:600}',
+    '.learner-text small{font-size:11px;opacity:.72;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:190px}',
+    '.learner-actions{display:flex;gap:6px;margin-top:8px}',
+    '.learner-btn{flex:1;padding:5px 0;font-size:12px;cursor:pointer;border:1px solid rgba(148,163,184,.4);background:rgba(255,255,255,.06);color:#e2e8f0;border-radius:6px;white-space:nowrap}',
+    '.learner-btn:hover{background:rgba(255,255,255,.14)}',
+    '.learner-btn.danger{color:#fca5a5;border-color:rgba(248,113,113,.45)}',
+    '.learner-note{margin-top:6px;font-size:11px;opacity:.6;line-height:1.5}',
+    '.mh-learner{border:0;background:rgba(255,255,255,.12);color:#fff;font-size:12px;padding:3px 10px;border-radius:999px;max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
+  ].join('');
+  document.head.appendChild(st);
+}
+
+function _injectLearnerCard() {
+  _injectLearnerStyles();
+  const sidebar = document.querySelector('.sidebar');
+  if (sidebar && !document.getElementById('learnerCard')) {
+    const card = document.createElement('div');
+    card.className = 'learner-card';
+    card.id = 'learnerCard';
+    card.innerHTML =
+      '<div class="learner-info"><span>👤</span><span class="learner-text">' +
+        '<b id="learnerName">识别中…</b><small id="learnerDept"></small></span></div>' +
+      '<div class="learner-actions">' +
+        '<button class="learner-btn" onclick="switchLearner()" title="公用电脑换人学习时使用">切换学员</button>' +
+        '<button class="learner-btn danger" onclick="resetMyProgress()" title="只清空当前学员的进度">重置我的进度</button></div>' +
+      '<div class="learner-note">学习进度按学员分开保存，换人请先切换身份</div>';
+    const footer = sidebar.querySelector('.sidebar-footer');
+    if (footer) sidebar.insertBefore(card, footer); else sidebar.appendChild(card);
+  }
+  const mh = document.querySelector('.mobile-header');
+  if (mh && !document.getElementById('mhLearner')) {
+    const b = document.createElement('button');
+    b.id = 'mhLearner';
+    b.className = 'mh-learner';
+    b.textContent = '👤 …';
+    b.onclick = () => { if (typeof toggleSidebar === 'function') toggleSidebar(); };
+    const timer = document.getElementById('mhTimer');
+    if (timer) mh.insertBefore(b, timer); else mh.appendChild(b);
+  }
+}
+
+function renderLearnerCard() {
+  const name = identityUser && identityUser.name ? identityUser.name : '本机模式（未识别身份）';
+  const dept = identityUser && identityUser.deptPath ? identityUser.deptPath : '';
+  const nEl = document.getElementById('learnerName');
+  const dEl = document.getElementById('learnerDept');
+  if (nEl) nEl.textContent = name;
+  if (dEl) dEl.textContent = dept;
+  const mh = document.getElementById('mhLearner');
+  if (mh) mh.textContent = identityUser && identityUser.name ? '👤 ' + identityUser.name : '👤 未识别';
+  /* 证书姓名自动填真名（不覆盖学员自己改过的内容） */
+  const cert = document.getElementById('certStudentName');
+  if (cert && identityUser && identityUser.name) {
+    const t = String(cert.textContent || '').trim();
+    if (t === '' || t === '请填写姓名' || /^_+$/.test(t)) cert.textContent = identityUser.name;
+  }
+}
+
+function switchLearner() {
+  if (!window.ScoreSDK) { if (typeof showToast === 'function') showToast('成绩中心不可用，无法切换身份', 'error'); return; }
+  if (!confirm('切换学员？\n\n当前学员「' + (identityUser && identityUser.name || '本机模式') + '」的进度会保留在本机，' +
+    '确认后需要新学员填写自己的姓名或工号重新进入。\n\n公用电脑换人学习请使用此按钮。')) return;
+  ScoreSDK.clearIdentity();
+  location.reload();
+}
+
+function resetMyProgress() {
+  if (!confirm('重置「' + (identityUser && identityUser.name || '本机模式') + '」的学习进度？\n\n章节解锁、练习、笔记、学习时长将全部清空，此操作不可撤销。')) return;
+  ['_progress', '_notes', '_study_seconds'].forEach(s => { try { localStorage.removeItem(LS_PREFIX + s); } catch (e) {} });
+  location.reload();
+}
+
+/* 新入口：先认人 → 切命名空间 → 再加载原课程 */
+async function init() {
+  identityUser = await waitForIdentity();
+  LS_PREFIX = LS_PREFIX_BASE + '::' + ((identityUser && identityUser.userId) ? identityUser.userId : 'local');
+  _injectLearnerCard();
+  renderLearnerCard();
+  initCourse();
 }
 
 document.addEventListener('DOMContentLoaded', init);
